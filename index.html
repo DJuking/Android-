@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Android-knowledge-share by DJuking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Android-knowledge-share</h1>
+      <h2 class="project-tagline">HandlerThread, Looper, Handler</h2>
+      <a href="https://github.com/DJuking/Android-Knowledge-Share" class="btn">View on GitHub</a>
+      <a href="https://github.com/DJuking/Android-Knowledge-Share/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/DJuking/Android-Knowledge-Share/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="handlerthreadlooperhandler" class="anchor" href="#handlerthreadlooperhandler" aria-hidden="true"><span class="octicon octicon-link"></span></a>HandlerThread+Looper+Handler</h1>
+
+<h2>
+<a id="应用场景" class="anchor" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF" aria-hidden="true"><span class="octicon octicon-link"></span></a>应用场景</h2>
+
+<p>本地；耗时（DB、IO、计算等）；顺序</p>
+
+<h2>
+<a id="主要运用步骤" class="anchor" href="#%E4%B8%BB%E8%A6%81%E8%BF%90%E7%94%A8%E6%AD%A5%E9%AA%A4" aria-hidden="true"><span class="octicon octicon-link"></span></a>主要运用步骤</h2>
+
+<h3>
+<a id="准备工作" class="anchor" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C" aria-hidden="true"><span class="octicon octicon-link"></span></a>准备工作</h3>
+
+<pre><code>new HandlerThread("dataHandlerThread");
+dataHandlerThread.start(); // 必须在前，否则dataHandlerThread.getLooper()为null
+new Handler(dataHandlerThread.getLooper()); // 不传入参数，相当于用getMainLooper()，占用主线程资源
+handleMessage(Message msg);
+</code></pre>
+
+<h3>
+<a id="使用" class="anchor" href="#%E4%BD%BF%E7%94%A8" aria-hidden="true"><span class="octicon octicon-link"></span></a>使用</h3>
+
+<pre><code>dataHandler.sendEmptyMessage(DO_SOMETHING);
+</code></pre>
+
+<h3>
+<a id="释放资源" class="anchor" href="#%E9%87%8A%E6%94%BE%E8%B5%84%E6%BA%90" aria-hidden="true"><span class="octicon octicon-link"></span></a>释放资源</h3>
+
+<pre><code>dataHandlerThread.quit();
+</code></pre>
+
+<h2>
+<a id="机制简析" class="anchor" href="#%E6%9C%BA%E5%88%B6%E7%AE%80%E6%9E%90" aria-hidden="true"><span class="octicon octicon-link"></span></a>机制简析</h2>
+
+<p>Handler（带消息队列），   接收消息；消息与任务对应</p>
+
+<p>HandlerThread，   带Looper的线程，任务实际执行的地方</p>
+
+<p>Looper，   Handler与HandlerThread之间桥梁，从Handler领任务到HandlerThread</p>
+
+<h2>
+<a id="相似方案比较" class="anchor" href="#%E7%9B%B8%E4%BC%BC%E6%96%B9%E6%A1%88%E6%AF%94%E8%BE%83" aria-hidden="true"><span class="octicon octicon-link"></span></a>相似方案比较</h2>
+
+<blockquote>
+<p>Thread、Runnable   简单、易用</p>
+
+<p>AsyncTask   过程精细化；UI/后台线程</p>
+
+<p>HandlerThread+Looper+Handler   候命数据线程；比AsyncTask轻量级；顺序；高频；灵活组合</p>
+</blockquote>
+
+<h2>
+<a id="扩展" class="anchor" href="#%E6%89%A9%E5%B1%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>扩展</h2>
+
+<h3>
+<a id="关于msgwhat的int值" class="anchor" href="#%E5%85%B3%E4%BA%8Emsgwhat%E7%9A%84int%E5%80%BC" aria-hidden="true"><span class="octicon octicon-link"></span></a>关于msg.what的int值</h3>
+
+<blockquote>
+<p>写在ids.xml文件，然后以R.id.decode形式使用</p>
+</blockquote>
+
+<h3>
+<a id="handler中消息控制" class="anchor" href="#handler%E4%B8%AD%E6%B6%88%E6%81%AF%E6%8E%A7%E5%88%B6" aria-hidden="true"><span class="octicon octicon-link"></span></a>Handler中消息控制</h3>
+
+<blockquote>
+<p>// 生成消息</p>
+
+<p>Handler#obtainMessage()</p>
+
+<p>// 延时发送</p>
+
+<p>Handler#sendEmptyMessageDelayed()</p>
+
+<p>Handler#sendMessageDelayed()</p>
+
+<p>// 插队</p>
+
+<p>Handler#sendMessageAtFrontOfQueue()</p>
+
+<p>// 移除</p>
+
+<p>Handler#removeMessages()</p>
+</blockquote>
+
+<h3>
+<a id="独立文件书写" class="anchor" href="#%E7%8B%AC%E7%AB%8B%E6%96%87%E4%BB%B6%E4%B9%A6%E5%86%99" aria-hidden="true"><span class="octicon octicon-link"></span></a>独立文件书写</h3>
+
+<blockquote>
+<p>Thread、Handler</p>
+</blockquote>
+
+<h2>
+<a id="补充材料" class="anchor" href="#%E8%A1%A5%E5%85%85%E6%9D%90%E6%96%99" aria-hidden="true"><span class="octicon octicon-link"></span></a>补充材料</h2>
+
+<p>《Android HandlerThread 完全解析》</p>
+
+<p><a href="http://blog.csdn.net/lmj623565791/article/details/47079737">http://blog.csdn.net/lmj623565791/article/details/47079737</a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/DJuking/Android-Knowledge-Share">Android-knowledge-share</a> is maintained by <a href="https://github.com/DJuking">DJuking</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
